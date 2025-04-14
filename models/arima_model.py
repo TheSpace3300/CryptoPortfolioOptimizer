@@ -1,5 +1,6 @@
 from statsmodels.tsa.arima.model import ARIMA
 
 def arima_forecast(series, steps=30):
-    model = ARIMA(series, order=(5, 1, 0)).fit()
-    return model.forecast(steps=steps)
+    arima_model = ARIMA(series, order=(1, 1, 1)).fit()
+    forecast = arima_model.forecast(steps=steps)
+    return forecast
