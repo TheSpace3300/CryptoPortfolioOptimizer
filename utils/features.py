@@ -1,26 +1,18 @@
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.stattools import acf
-from scipy.stats import skew, kurtosis
-from statsmodels.tsa.seasonal import STL
 
-def extract_features(series: pd.Series) -> pd.Series:
-    values = series.values
-    returns = np.diff(np.log(values + 1e-8))
-
-    stl = STL(series, period=7, robust=True).fit()
-    trend_strength = 1 - np.var(stl.resid) / np.var(stl.trend + stl.resid)
-    seasonal_strength = 1 - np.var(stl.resid) / np.var(stl.seasonal + stl.resid)
-
+def extract_features(series: pd.Series, steps: int = 30):
+    """
+    Извлечение простых статистических признаков из временного ряда
+    """
+    returns = np.diff(np.log(series + 1e-8))
     features = {
-        "mean": np.mean(values),
-        "std": np.std(values),
-        "volatility": np.std(returns),
-        "skewness": skew(returns),
-        "kurtosis": kurtosis(returns),
-        "acf1": acf(returns, nlags=1)[1],
-        "trend_strength": trend_strength,
-        "seasonal_strength": seasonal_strength,
-        "length": len(values)
+        "mean": np.mean(series),
+        "std": np.std(series),
+        "min": np.min(series),
+        "max": np.max(series),
+        "skew": pd.Series(series).skew(),
+        "kurt": pd.Series(series).kurt(),
+        "last_return": returns[-1] if len(returns) > 0 else 0
     }
-    return pd.Series(features)
+    return np.array(list(features.values())).reshape(1, -1)
