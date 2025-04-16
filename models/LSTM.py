@@ -16,15 +16,18 @@ def create_lstm_dataset(data, time_step, forecast_horizon):
 
 def train_lstm(data, forecast_horizon):
     time_step = 60
-    scaler = MinMaxScaler()
-    scaled_data = scaler.fit_transform(data.reshape(-1, 1))
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    data_scaled = scaler.fit_transform(data.reshape(-1, 1))
 
-    X, y = create_lstm_dataset(scaled_data, time_step, forecast_horizon)
-    X = X.reshape((X.shape[0], X.shape[1], 1))
+    test_size = int(len(data_scaled) * 0.8)
+    train_data = data_scaled[:-test_size]
+    test_data = data_scaled[-test_size:]
 
-    train_size = int(len(X) * 0.8)
-    X_train, X_test = X[:train_size], X[train_size:]
-    y_train, y_test = y[:train_size], y[train_size:]
+    X_train, y_train = create_lstm_dataset(train_data, time_step, forecast_horizon)
+    X_test, y_test = create_lstm_dataset(test_data, time_step, forecast_horizon)
+
+    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
+    X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
     model = Sequential()
     model.add(Bidirectional(LSTM(64, return_sequences=True, input_shape=(X_train.shape[1], 1))))
@@ -36,10 +39,18 @@ def train_lstm(data, forecast_horizon):
     model.fit(X_train, y_train, epochs=20, batch_size=32, verbose=1)
 
     predictions = model.predict(X_test)
-    y_test_rescaled = scaler.inverse_transform(
-        np.hstack([y_test, np.zeros((y_test.shape[0], 1))]))[forecast_horizon]
-    predictions_rescaled = scaler.inverse_transform(
-        np.hstack([predictions, np.zeros((predictions.shape[0], 1))]))[forecast_horizon]
+    predictions = scaler.inverse_transform(predictions)
 
-    rmse = sqrt(mean_squared_error(y_test_rescaled, predictions_rescaled))
-    return "LSTM", rmse, predictions_rescaled
+    y_test_original = scaler.inverse_transform(y_test)
+
+
+    last_data = data[-time_step:]
+    last_data.mean()
+    last_data_scaled = scaler.transform(last_data.reshape(-1, 1))
+    X_input = last_data_scaled.reshape(1, time_step, 1)
+    predicted_scaled = model.predict(X_input)
+    predicted_values = scaler.inverse_transform(predicted_scaled)
+
+
+    rmse = sqrt(mean_squared_error(y_test_original, predictions))
+    return "LSTM", rmse, predicted_values
