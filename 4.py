@@ -3,7 +3,6 @@ from statsmodels.tsa.vector_ar.var_model import forecast
 from tensorflow.python.ops.numpy_ops.np_array_ops import reshape
 
 from services.fetch_data import fetch_ohlcv
-from utils.metrics import rmse
 from utils.sharpe import sharpe_ratio
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf

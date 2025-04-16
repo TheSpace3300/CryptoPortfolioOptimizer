@@ -14,9 +14,9 @@ def select_best_model(data, forecast_horizon):
     for train_func in [train_lstm, train_arima, train_holt_winters]:
         model_name = train_func.__name__.replace("train_", "").upper()
         try:
-            name, rmse, forecast = train_func(data.copy(), forecast_horizon=forecast_horizon)
-            results.append((name, rmse, forecast))
-            print(f"{model_name} успешно обучена. RMSE = {rmse:.4f}")
+            name, mae, forecast = train_func(data.copy(), forecast_horizon=forecast_horizon)
+            results.append((name, mae, forecast))
+            print(f"{model_name} успешно обучена. MAE = {mae:.4f}")
         except Exception as e:
             print(f"{model_name} не смогла обучиться: {e}")
 
@@ -24,5 +24,5 @@ def select_best_model(data, forecast_horizon):
         raise RuntimeError("Ни одна из моделей не смогла обучиться.")
 
     best_model = min(results, key=lambda x: x[1])
-    print(f"✅ Лучшая модель: {best_model[0]} (RMSE: {best_model[1]:.4f})")
+    print(f"✅ Лучшая модель: {best_model[0]} (MAE: {best_model[1]:.4f})")
     return best_model

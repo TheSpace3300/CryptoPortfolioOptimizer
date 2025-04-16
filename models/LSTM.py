@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from ccxt.static_dependencies.ethereum.utils.units import units
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 from math import sqrt
 
 from tensorflow.keras.models import Sequential
@@ -23,9 +23,9 @@ def train_lstm(data, forecast_horizon):
     if time_step < 1:
         raise ValueError("Недостаточно данных даже для одного шага.")
     scaler = MinMaxScaler(feature_range=(0, 1))
-    data_scaled = scaler.fit_transform(data.reshape(-1, 1))
+    data_scaled = scaler.fit_transform(data.values.reshape(-1, 1))
 
-    test_size = int(len(data_scaled) * 0.8)
+    test_size = int(len(data_scaled) * 0.2)
     train_data = data_scaled[:-test_size]
     test_data = data_scaled[-test_size:]
 
@@ -52,14 +52,14 @@ def train_lstm(data, forecast_horizon):
 
     y_test_original = scaler.inverse_transform(y_test)
 
-    rmse = sqrt(mean_squared_error(y_test_original[-1], predictions[-1]))
+    mae = mean_absolute_error(y_test_original[-1], predictions[-1])
 
 
     last_data = data[-time_step:]
-    last_data_scaled = scaler.transform(last_data.reshape(-1, 1))
+    last_data_scaled = scaler.transform(last_data.values.reshape(-1, 1))
     X_input = last_data_scaled.reshape(1, time_step, 1)
     predicted_scaled = model.predict(X_input)
     predicted_values = scaler.inverse_transform(predicted_scaled)[0]
 
 
-    return "LSTM", rmse, predicted_values
+    return "LSTM", mae, predicted_values

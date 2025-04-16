@@ -1,7 +1,7 @@
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 from math import sqrt
 from statsmodels.tsa.stattools import adfuller
 
@@ -14,6 +14,5 @@ def train_arima(data, forecast_horizon=7):
     model_fit = model.fit()
     ar_forecast = model_fit.forecast(steps=forecast_horizon)
 
-    rmse = sqrt(mean_squared_error(test, ar_forecast))
-    #mae = mean_absolute_error(test, ar_forecast)
-    return "ARIMA", rmse, ar_forecast
+    mae = mean_absolute_error(test, ar_forecast)
+    return "ARIMA", mae, ar_forecast
