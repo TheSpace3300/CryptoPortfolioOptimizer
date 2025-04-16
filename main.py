@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import os
 
-PAIRS = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'DOGE/USDT', 'USDC/USDT']
+PAIRS = ['TRUMP/USDT']
 results = {}
 
 # Создаем папку для графиков, если не существует
