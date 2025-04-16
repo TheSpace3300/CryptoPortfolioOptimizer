@@ -7,12 +7,13 @@ from statsmodels.tsa.stattools import adfuller
 
 def train_arima(data, forecast_horizon=7):
     result = adfuller(data)
+    train_size = forecast_horizon
+    train, test = data[:-train_size], data[-train_size:]
 
-    model = ARIMA(data, order=(1, 1, 1))
+    model = ARIMA(train, order=(1, 1, 1))
     model_fit = model.fit()
-    ar_forecast = model_fit.forecast(steps=len(data))
+    ar_forecast = model_fit.forecast(steps=forecast_horizon)
 
-    y_true = data
-    y_pred = ar_forecast
-    rmse = sqrt(mean_squared_error(y_true, y_pred))
-    return "ARIMA", rmse, ar_forecast[:forecast_horizon]
+    rmse = sqrt(mean_squared_error(test, ar_forecast))
+    #mae = mean_absolute_error(test, ar_forecast)
+    return "ARIMA", rmse, ar_forecast
