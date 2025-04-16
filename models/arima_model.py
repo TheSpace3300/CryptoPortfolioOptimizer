@@ -3,14 +3,16 @@ from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from math import sqrt
+from statsmodels.tsa.stattools import adfuller
 
 def train_arima(data, forecast_horizon=7):
-    train_size = int(len(data) * 0.8)
-    train, test = data[:train_size], data[train_size:]
+    result = adfuller(data)
 
-    model = ARIMA(train, order=(5, 1, 0))
+    model = ARIMA(data, order=(1, 1, 1))
     model_fit = model.fit()
-    forecast = model_fit.forecast(steps=len(test))
+    ar_forecast = model_fit.forecast(steps=len(data))
 
-    rmse = sqrt(mean_squared_error(test[:len(forecast)], forecast))
-    return "ARIMA", rmse, forecast[:forecast_horizon]
+    y_true = data
+    y_pred = ar_forecast
+    rmse = sqrt(mean_squared_error(y_true, y_pred))
+    return "ARIMA", rmse, ar_forecast[:forecast_horizon]

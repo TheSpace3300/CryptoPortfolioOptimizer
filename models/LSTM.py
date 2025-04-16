@@ -30,13 +30,13 @@ def train_lstm(data, forecast_horizon):
     X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
     model = Sequential()
-    model.add(Bidirectional(LSTM(64, return_sequences=True, input_shape=(X_train.shape[1], 1))))
+    model.add(LSTM(64, return_sequences=True, input_shape=(X_train.shape[1], 1)))
     model.add(Dropout(0.3))
     model.add(LSTM(64))
     model.add(Dropout(0.3))
     model.add(Dense(forecast_horizon))
     model.compile(optimizer='adam', loss='mean_squared_error')
-    model.fit(X_train, y_train, epochs=20, batch_size=32, verbose=1)
+    model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=1)
 
     predictions = model.predict(X_test)
     predictions = scaler.inverse_transform(predictions)

@@ -2,9 +2,6 @@ from statsmodels.tsa.arima.model import ARIMA
 import pmdarima as pm
 
 from services.fetch_data import fetch_ohlcv
-from models.arima_model import arima_forecast
-from models.holt_winters import holt_winters_forecast
-from models.model_selector import select_best_model_ml
 from utils.metrics import rmse
 from utils.sharpe import sharpe_ratio
 from statsmodels.tsa.stattools import adfuller
