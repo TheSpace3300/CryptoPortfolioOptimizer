@@ -43,14 +43,14 @@ def train_lstm(data, forecast_horizon):
 
     y_test_original = scaler.inverse_transform(y_test)
 
+    rmse = sqrt(mean_squared_error(y_test_original, predictions))
+
 
     last_data = data[-time_step:]
-    last_data.mean()
     last_data_scaled = scaler.transform(last_data.reshape(-1, 1))
     X_input = last_data_scaled.reshape(1, time_step, 1)
     predicted_scaled = model.predict(X_input)
-    predicted_values = scaler.inverse_transform(predicted_scaled)
+    predicted_values = scaler.inverse_transform(predicted_scaled)[0]
 
 
-    rmse = sqrt(mean_squared_error(y_test_original, predictions))
-    return "LSTM", rmse, predicted_values
+    return "LSTM", rmse, predicted_values[:forecast_horizon]
