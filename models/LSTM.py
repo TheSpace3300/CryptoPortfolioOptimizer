@@ -23,7 +23,7 @@ def train_lstm(data, forecast_horizon):
     if time_step < 1:
         raise ValueError("Недостаточно данных даже для одного шага.")
     scaler = MinMaxScaler(feature_range=(0, 1))
-    data_scaled = scaler.fit_transform(data.values.reshape(-1, 1))
+    data_scaled = scaler.fit_transform(data.reshape(-1, 1))
 
     test_size = int(len(data_scaled) * 0.2)
     train_data = data_scaled[:-test_size]
@@ -43,6 +43,7 @@ def train_lstm(data, forecast_horizon):
     model.add(Dropout(0.2))
     model.add(LSTM(units=100))
     model.add(Dropout(0.2))
+    model.add(Dense(units=25))
     model.add(Dense(forecast_horizon))
     model.compile(optimizer='adam', loss='mean_squared_error')
     model.fit(X_train, y_train, epochs=10, batch_size=32, verbose=1)
@@ -56,7 +57,7 @@ def train_lstm(data, forecast_horizon):
 
 
     last_data = data[-time_step:]
-    last_data_scaled = scaler.transform(last_data.values.reshape(-1, 1))
+    last_data_scaled = scaler.transform(last_data.reshape(-1, 1))
     X_input = last_data_scaled.reshape(1, time_step, 1)
     predicted_scaled = model.predict(X_input)
     predicted_values = scaler.inverse_transform(predicted_scaled)[0]
