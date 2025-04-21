@@ -6,13 +6,7 @@ from services.fetch_data import fetch_ohlcv
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Bidirectional
 from sklearn.preprocessing import MinMaxScaler
-
-def download_data(pairs):
-    df_dict = {}
-    for pair in pairs:
-        df = fetch_ohlcv(pair)
-        df_dict[pair] = df
-    return pd.DataFrame(df_dict)
+from data.download_data import data_raw
 
 # Шаг 2: Предобработка данных
 def preprocess_data(data, look_back=60):
@@ -85,7 +79,7 @@ def optimize_portfolio(expected_returns, covariance_matrix, total_investment):
 # Основная функция
 def create_investment_portfolio(pairs, investment_amount, forecast_days=5):
     # Скачиваем данные
-    data = download_data(pairs)
+    data = data_raw(pairs)
 
     predictions = {}
     returns = {}
@@ -147,7 +141,7 @@ for pair, info in portfolio.items():
 # Дополнительно можно вывести итоговую ожидаемую доходность и волатильность портфеля:
 expected_returns = np.array([info['predicted_return'] for info in portfolio.values()])
 weights = np.array([info['weight'] for info in portfolio.values()])
-cov_matrix = pd.DataFrame({pair: download_data([pair])[pair].pct_change().dropna()
+cov_matrix = pd.DataFrame({pair: data_raw([pair])[pair].pct_change().dropna()
                            for pair in pairs}).cov().values
 
 portfolio_return = np.dot(weights, expected_returns)
