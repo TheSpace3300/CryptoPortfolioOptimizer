@@ -2,7 +2,6 @@ from statsmodels.tsa.arima.model import ARIMA
 import pmdarima as pm
 
 from services.fetch_data import fetch_ohlcv
-from utils.metrics import rmse
 from utils.sharpe import sharpe_ratio
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf

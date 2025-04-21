@@ -1,3 +1,5 @@
+from typing import final
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -17,4 +19,12 @@ def train_holt_winters(data, forecast_horizon=7):
     hw_forecast = model_fit.forecast(steps=forecast_horizon)
 
     mae = mean_absolute_error(test, hw_forecast)
-    return "Holt-Winters", mae, hw_forecast
+
+    final_model = ExponentialSmoothing(data,
+                                 trend='add',
+                                 seasonal='add',
+                                 seasonal_periods=12)
+    final_model_fit = final_model.fit()
+    hw_forecast_future = final_model_fit.forecast(steps=forecast_horizon)
+
+    return "Holt-Winters", mae, hw_forecast_future, hw_forecast
