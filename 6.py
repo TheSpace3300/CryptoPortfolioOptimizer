@@ -8,7 +8,7 @@ from models.LSTM import train_lstm
 from models.arima_model import train_arima
 from models.holt_winters import train_holt_winters
 
-pairs = ['BTC/USDT']
+pairs = ['BTC/USDT', 'ETH/USDT', 'APEX/USDT', 'MNT/USDT', 'SOL/USDT', 'DOGE/USDT', 'XRP/USDT', 'GRASS/USDT', 'PEPE/USDT', 'NEAR/USDT', 'ADA/USDT', 'BNB/USDT', 'TRUMP/USDT', 'SUN/USDT', 'TRX/USDT']
 
 
 forecast_series = data_forecast(pairs, forecast_horizon=7)

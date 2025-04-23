@@ -124,7 +124,7 @@ def create_investment_portfolio(pairs, investment_amount, forecast_days=5):
 
     return portfolio
 
-pairs = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT']  # Можно заменить своими
+pairs = ['BTC/USDT', 'ETH/USDT', 'APEX/USDT', 'MNT/USDT', 'SOL/USDT', 'DOGE/USDT', 'XRP/USDT', 'GRASS/USDT', 'PEPE/USDT', 'NEAR/USDT', 'ADA/USDT', 'BNB/USDT', 'TRUMP/USDT', 'SUN/USDT', 'TRX/USDT']
 investment_amount = 10000  # В долларах
 forecast_days = 5  # Количество дней для прогноза
 
