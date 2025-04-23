@@ -26,13 +26,14 @@ def preprocess_data(data, look_back=60):
 # Шаг 3: Создание и обучение модели LSTM
 def build_lstm_model(input_shape):
     model = Sequential()
-    model.add(LSTM(units=50, return_sequences=True, input_shape=input_shape))
-    model.add(LSTM(units=50, return_sequences=False))
+    model.add(LSTM(units=100, return_sequences=True, input_shape=input_shape))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=100, return_sequences=False))
+    model.add(Dropout(0.2))
     model.add(Dense(units=25))
     model.add(Dense(units=1))
     model.compile(optimizer='adam', loss='mean_squared_error')
     return model
-
 
 # Шаг 4: Прогнозирование будущих цен
 def predict_future_prices(model, last_sequence, scaler, days=30):
@@ -91,7 +92,7 @@ def create_investment_portfolio(pairs, investment_amount, forecast_days=5):
         model = build_lstm_model((X.shape[1], 1))
 
         # Обучение модели
-        model.fit(X, y, batch_size=32, epochs=10, verbose=0)
+        model.fit(X, y, batch_size=32, epochs=40, verbose=1)
 
         # Прогнозирование будущих цен
         last_sequence = X[-1].reshape(1, -1, 1)
