@@ -151,4 +151,4 @@ sharpe_ratio = portfolio_return / portfolio_volatility
 
 print(f"\n📊 Ожидаемая доходность портфеля: {portfolio_return * 100:.2f}%")
 print(f"📉 Ожидаемая волатильность портфеля: {portfolio_volatility * 100:.2f}%")
-print(f"⚖️ Коэффициент Шарпа (LSTM-базовый): {sharpe_ratio:.2f}")
+print(f"⚖️ Коэффициент Шарпа: {sharpe_ratio:.2f}")
