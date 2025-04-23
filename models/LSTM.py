@@ -73,4 +73,4 @@ def train_lstm(data, forecast_horizon):
     forecast_future_scaled = model_full.predict(X_input_full)
     forecast_future = scaler.inverse_transform(forecast_future_scaled)[0]
 
-    return "LSTM", mae, forecast_future, predicted
+    return "LSTM", mae, forecast_future

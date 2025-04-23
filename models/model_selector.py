@@ -15,8 +15,8 @@ def select_best_model(data, forecast_horizon):
     for train_func in [train_lstm, train_arima, train_holt_winters]:
         model_name = train_func.__name__.replace("train_", "").upper()
         try:
-            name, mae, forecast, test = train_func(data.copy(), forecast_horizon=forecast_horizon)
-            results.append((name, mae, forecast))
+            name, mae, future_prices = train_func(data.copy(), forecast_horizon=forecast_horizon)
+            results.append((name, mae, future_prices))
             print(f"{model_name} успешно обучена. MAE = {mae:.4f}")
         except Exception as e:
             print(f"{model_name} не смогла обучиться: {e}")

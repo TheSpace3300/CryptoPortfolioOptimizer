@@ -27,4 +27,4 @@ def train_holt_winters(data, forecast_horizon=7):
     final_model_fit = final_model.fit()
     hw_forecast_future = final_model_fit.forecast(steps=forecast_horizon)
 
-    return "Holt-Winters", mae, hw_forecast_future, hw_forecast
+    return "Holt-Winters", mae, hw_forecast_future

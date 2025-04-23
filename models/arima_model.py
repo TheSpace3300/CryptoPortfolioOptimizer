@@ -58,4 +58,4 @@ def train_arima(data, forecast_horizon=7):
             prev = pred
         ar_forecast_future = np.array(restored_future)
 
-    return "ARIMA", mae, ar_forecast_future, ar_forecast
+    return "ARIMA", mae, ar_forecast_future
