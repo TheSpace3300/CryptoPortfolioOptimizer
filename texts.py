@@ -43,7 +43,7 @@ def make_predict(results):
     ans = []
     for pair, info in results.items():
         # Формируем первую строку с количеством дней и парой
-        ans.append(f"📈 Прогноз на {info['forecast_horizon']} дней для {pair}:\n")
+        ans.append(f"📈 Прогноз на {info['forecast_horizon']} дней для {pair}:")
 
         # Формируем строки прогноза
         if hasattr(info['forecast'], 'tolist'):
