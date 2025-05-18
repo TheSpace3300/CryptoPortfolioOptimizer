@@ -19,7 +19,8 @@ def data_forecast(pairs, forecast_horizon=7):
         results[pair] = {
             'model': best_model_name,
             'mae': best_mae,
-            'forecast': forecast_series
+            'forecast': forecast_series,
+            'forecast_horizon': forecast_horizon
         }
 
         print(f"📈 Прогноз на {forecast_horizon} дней для {pair} с моделью {best_model_name} (MAE: {best_mae:.4f}):")

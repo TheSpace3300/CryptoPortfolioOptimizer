@@ -1,6 +1,8 @@
 import asyncio
 import sys
 
+from pygments.lexer import default
+
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -13,8 +15,10 @@ import ccxt
 
 exchange = ccxt.bybit()
 
+
+from data.download_data import data_forecast
 from aiogram.filters import StateFilter
-from data import config
+from utils.opt import create_investment_portfolio
 from data.config import TOKEN
 from userStates import UserStates
 from userStates import PairInput
@@ -25,6 +29,7 @@ dp = Dispatcher(storage=MemoryStorage())
 
 router = Router()
 pair = {}
+pair_predict = {}
 
 main_keyboard1 = ReplyKeyboardMarkup(
     keyboard= [[KeyboardButton(text="Составить портфель"), KeyboardButton(text="Сделать прогноз")],
@@ -32,6 +37,12 @@ main_keyboard1 = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+main_keyboard2 = ReplyKeyboardMarkup(
+    keyboard= [[KeyboardButton(text="Стоп"), KeyboardButton(text="Очистить список")],
+                [KeyboardButton(text="Главное меню")]
+    ],
+    resize_keyboard=True
+)
 
 
 @router.message(CommandStart())
@@ -49,12 +60,93 @@ async def contacts(message: types.Message):
 @router.message(F.text =="Составить портфель")
 async def contacts(message: types.Message, state: FSMContext):
     await state.set_state(PairInput.waiting_for_pairs)
-    await message.answer(tx.start_make_portfolio())
+    await message.answer(tx.start_make_portfolio(), reply_markup=main_keyboard2)
 
-@router.message(PairInput.waiting_for_pairs, lambda message: not message.text.startswith('/'))
-async def add_to_list(message: types.Message):
-    if message.text.startswith('/'):
-        # Это команда, не обрабатываем как пару
+@router.message(F.text =="Сделать прогноз")
+async def contacts(message: types.Message, state: FSMContext):
+    await state.set_state(PairInput.predict_pairs)
+    await message.answer(tx.start_make_predict(), reply_markup=main_keyboard2)
+
+
+@router.message(F.text =="Очистить список")
+async def contacts(message: types.Message):
+    pair[message.from_user.id] = []
+    await message.answer("Список очищен")
+
+
+@router.message(StateFilter(PairInput.predict_pairs))
+async def add_pair(message: types.Message, state: FSMContext):
+    if message.text.lower() == "стоп":
+        if message.from_user.id in pair_predict and pair_predict[message.from_user.id]:
+            await message.answer("Ввод завершён. Ваши пары сохранены.")
+            await message.answer("Введите количество дней, на которое вы хотите сделать прогноз(от 1 до 10 дней):")
+            await state.set_state(UserStates.Predict)
+        else:
+            await message.answer("Пожалуйста, добавьте хотя бы одну пару перед завершением.")
+        return
+    pair_input = message.text.strip().upper()
+
+    try:
+        markets = exchange.load_markets()
+        market_symbols = set(markets.keys())
+
+        if pair_input not in market_symbols:
+            await message.answer(f"Пара {pair_input} не найдена на бирже Bybit.")
+            return
+
+        if message.from_user.id not in pair_predict:
+            pair_predict[message.from_user.id] = []
+
+        if pair_input in pair_predict[message.from_user.id]:
+            await message.answer(f"Пара {pair_input} уже есть в вашем списке.")
+        else:
+            pair_predict[message.from_user.id].append(pair_input)
+            await message.answer(f"Пара {pair_input} добавлена в ваш список.")
+
+        await message.answer(f"Ваш список: {pair_predict[message.from_user.id]}")
+
+    except Exception as e:
+        await message.answer(f"Ошибка при проверке монеты: {e}")
+
+    if message.from_user.id not in pair_predict or not pair_predict[message.from_user.id]:
+        await message.answer("Пожалуйста, введите первую пару.")
+
+@router.message(StateFilter(UserStates.Predict))
+async def predict_value(message: types.Message, state: FSMContext):
+    # Проверка на ввод числа
+    if not message.text.isdigit():
+        await message.answer("Введите корректное число.")
+        return
+
+    forecast_horizon = int(message.text)
+
+    # Проверка на диапазон суммы
+    if 1 <= forecast_horizon <= 10:
+        try:
+            # Получаем список пар пользователя из глобальной переменной
+            user_pairs = pair_predict.get(message.from_user.id, [])
+
+            # Создаем портфель на основе введённых пар
+            results = data_forecast(user_pairs, forecast_horizon)
+            await message.answer(tx.make_predict(results))
+            pair_predict[message.from_user.id] = []
+        except Exception as e:
+            await message.answer("Произошла ошибка при составлении прогноза.")
+            print(f"Error: {e}")
+        finally:
+            await state.clear()
+
+
+
+@router.message(StateFilter(PairInput.waiting_for_pairs))
+async def add_to_list(message: types.Message, state: FSMContext):
+    if message.text.lower() == "стоп":
+        if message.from_user.id in pair and pair[message.from_user.id]:
+            await message.answer("Ввод завершён. Ваши пары сохранены.")
+            await message.answer("Введите сумму для создания инвестиционного портфеля (от 1 000$ до 10 000 000$):")
+            await state.set_state(UserStates.Money)
+        else:
+            await message.answer("Пожалуйста, добавьте хотя бы одну пару перед завершением.")
         return
 
     pair_input = message.text.strip().upper()
@@ -81,47 +173,41 @@ async def add_to_list(message: types.Message):
     except Exception as e:
         await message.answer(f"Ошибка при проверке монеты: {e}")
 
-@router.message(Command("done"), PairInput.waiting_for_pairs)
-async def done(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-    await state.clear()  # сбрасываем состояние — ввод завершён
-    await message.answer("Ввод завершён. Ваши пары сохранены.")
+    if message.from_user.id not in pair or not pair[message.from_user.id]:
+        await message.answer("Пожалуйста, введите первую пару.")
 
 @router.message(StateFilter(UserStates.Money))
-async def answer(message: types.Message, state: FSMContext):
-    if message.text.lower() == 'отмена':
-        await message.answer(tx.start_make_portfolio())
-        await state.clear()
-    else:
-        if '/' not in message.text:
-            if message.text.isdigit():
-                amount = int(message.text)
-                if 1000 <= amount <= 10000000:
-                    try:
-                        portfolio = algos.create_investment_portfolio(algos.stocks, amount)
-                        await message.answer(tx.make_portfolio(portfolio))
-                    except Exception as e:
-                        await message.answer("Произошла ошибка при обработке запроса.")
-                        print(f"Error: {e}")
-                    finally:
-                        await state.clear()
-                else:
-                    await message.answer(tx.low_money())
-            else:
-                await message.answer(tx.is_not_digit())
-        else:
-            await message.answer(tx.bad_responce())
+async def enter_amount(message: types.Message, state: FSMContext):
+    # Проверка на ввод числа
+    if not message.text.isdigit():
+        await message.answer("Введите корректное число.")
+        return
+
+    amount = int(message.text)
+
+    # Проверка на диапазон суммы
+    if 1000 <= amount <= 10000000:
+        try:
+            # Получаем список пар пользователя из глобальной переменной
+            user_pairs = pair.get(message.from_user.id, [])
+
+
+            # Создаем портфель на основе введённых пар
+            portfolio = create_investment_portfolio(user_pairs, amount)
+            await message.answer(tx.make_portfolio(portfolio))
+            pair[message.from_user.id] = []
+        except Exception as e:
+            await message.answer("Произошла ошибка при создании портфеля.")
+            print(f"Error: {e}")
+        finally:
             await state.clear()
-
-
-@router.message(F.text == "Дай пасхалку")
-async def answer(message: types.Message):
-    await message.answer('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    else:
+        await message.answer("Сумма должна быть в пределах от 1000 до 10000000.")
 
 
 @router.message()
 async def answer(message: types.Message):
-    await message.answer('Прости, я не понимаю тебя')
+    await message.answer('Простите, я не понимаю вас')
 
 
 async def main():

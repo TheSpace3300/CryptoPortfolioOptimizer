@@ -96,7 +96,7 @@ def create_investment_portfolio(pairs, investment_amount, forecast_days=5):
         model = build_lstm_model((X.shape[1], 1))
 
         # Обучение модели
-        model.fit(X, y, batch_size=32, epochs=40, verbose=1)
+        model.fit(X, y, batch_size=32, epochs=20, verbose=1)
 
         # Прогнозирование будущих цен
         last_sequence = X[-1].reshape(1, -1, 1)
@@ -121,38 +121,10 @@ def create_investment_portfolio(pairs, investment_amount, forecast_days=5):
 
     # Вывод результатов
     portfolio = {pairs[i]: {
-        'allocation_usd': allocation[i],
+        'allocation': allocation[i],
         'weight': weights[i],
         'predicted_return': expected_returns[i],
         'predicted_price': predictions[pairs[i]]
     } for i in range(len(pairs))}
 
     return portfolio
-
-pairs = ['BTC/USDT', 'ETH/USDT', 'APEX/USDT', 'MNT/USDT', 'SOL/USDT', 'DOGE/USDT', 'XRP/USDT', 'GRASS/USDT', 'PEPE/USDT', 'NEAR/USDT', 'ADA/USDT', 'BNB/USDT', 'TRUMP/USDT', 'SUN/USDT', 'TRX/USDT']
-investment_amount = 10000  # В долларах
-forecast_days = 5  # Количество дней для прогноза
-
-portfolio = create_investment_portfolio(pairs, investment_amount, forecast_days)
-
-print(f"🔮 Прогноз инвестиционного портфеля на {forecast_days} дней:\n")
-for pair, info in portfolio.items():
-    print(f"🪙 {pair}")
-    print(f"   📈 Прогнозируемая цена: ${info['predicted_price']:.2f}")
-    print(f"   🔁 Прогнозируемая доходность: {info['predicted_return'] * 100:.2f}%")
-    print(f"   💰 Рекомендуемая аллокация: ${info['allocation_usd']:.2f} ({info['weight'] * 100:.2f}%)")
-    print("-" * 50)
-
-# Дополнительно можно вывести итоговую ожидаемую доходность и волатильность портфеля:
-expected_returns = np.array([info['predicted_return'] for info in portfolio.values()])
-weights = np.array([info['weight'] for info in portfolio.values()])
-cov_matrix = pd.DataFrame({pair: data_raw([pair])[pair].pct_change().dropna()
-                           for pair in pairs}).cov().values
-
-portfolio_return = np.dot(weights, expected_returns)
-portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-sharpe_ratio = portfolio_return / portfolio_volatility
-
-print(f"\n📊 Ожидаемая доходность портфеля: {portfolio_return * 100:.2f}%")
-print(f"📉 Ожидаемая волатильность портфеля: {portfolio_volatility * 100:.2f}%")
-print(f"⚖️ Коэффициент Шарпа: {sharpe_ratio:.2f}")
