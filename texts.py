@@ -1,8 +1,5 @@
-from pickle import FALSE
-
-
 def start_command():
-    return 'Привет, я телеграм-бот. Я могу помочь оптимизировать инвестиционный портфель или сделать прогноз на стоимость криптовалютных активов.'
+    return 'Привет, я телеграм-бот. Я могу помочь оптимизировать инвестиционный портфель или сделать прогноз на стоимость криптовалютных активов. Что вы хотите сделать?'
 
 
 def start_make_portfolio():
@@ -47,9 +44,9 @@ def make_predict(results):
 
         # Формируем строки прогноза
         if hasattr(info['forecast'], 'tolist'):
-            forecast = '\n'.join(map(str, info['forecast'].tolist()))  # Преобразуем в список строк
+            forecast = '\n'.join(f"{x:.3f}" for x in info['forecast'].tolist())  # Преобразуем в список строк
         else:
-            forecast = str(info['forecast'])  # На случай, если это одно значение
+            forecast = f"{info['forecast']:.3f}"  # На случай, если это одно значение
 
         # Добавляем прогноз к списку ответов
         ans.append(forecast)

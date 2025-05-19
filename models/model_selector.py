@@ -1,10 +1,3 @@
-from sklearn.metrics import mean_squared_error
-from sklearn.ensemble import RandomForestRegressor
-from utils.features import extract_features
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
 from models.LSTM import train_lstm
 from models.arima_model import train_arima
 from models.holt_winters import train_holt_winters

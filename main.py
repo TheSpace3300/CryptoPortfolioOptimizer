@@ -1,8 +1,5 @@
 import asyncio
 import sys
-
-from pygments.lexer import default
-
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -123,12 +120,13 @@ async def predict_value(message: types.Message, state: FSMContext):
     # Проверка на диапазон суммы
     if 1 <= forecast_horizon <= 10:
         try:
+            await message.answer("Дайте мне немного времени для составления прогноза.")
             # Получаем список пар пользователя из глобальной переменной
             user_pairs = pair_predict.get(message.from_user.id, [])
 
             # Создаем портфель на основе введённых пар
             results = data_forecast(user_pairs, forecast_horizon)
-            await message.answer(tx.make_predict(results))
+            await message.answer(tx.make_predict(results), reply_markup=main_keyboard1)
             pair_predict[message.from_user.id] = []
         except Exception as e:
             await message.answer("Произошла ошибка при составлении прогноза.")
@@ -188,13 +186,14 @@ async def enter_amount(message: types.Message, state: FSMContext):
     # Проверка на диапазон суммы
     if 1000 <= amount <= 10000000:
         try:
+            await message.answer("Дайте мне немного времени для составления портфеля.")
             # Получаем список пар пользователя из глобальной переменной
             user_pairs = pair.get(message.from_user.id, [])
 
 
             # Создаем портфель на основе введённых пар
             portfolio = create_investment_portfolio(user_pairs, amount)
-            await message.answer(tx.make_portfolio(portfolio))
+            await message.answer(tx.make_portfolio(portfolio), reply_markup=main_keyboard1)
             pair[message.from_user.id] = []
         except Exception as e:
             await message.answer("Произошла ошибка при создании портфеля.")
