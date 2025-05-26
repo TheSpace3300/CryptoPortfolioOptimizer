@@ -1,10 +1,4 @@
-from typing import final
-
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_absolute_error
-from math import sqrt
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 def train_holt_winters(data, forecast_horizon=7):

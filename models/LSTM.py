@@ -1,12 +1,8 @@
 import numpy as np
-import pandas as pd
-from ccxt.static_dependencies.ethereum.utils.units import units
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_absolute_error
-from math import sqrt
-
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Bidirectional
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 
 def create_lstm_dataset(data, time_step, forecast_horizon):
     X, y = [], []
